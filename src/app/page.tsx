@@ -50,7 +50,7 @@ export default async function Home({ searchParams }: PageProps) {
       />
       <div key={`${selectedTitle}-${selectedSearch}`} className="profile-list">
         {profiles.length > 0 ? (
-          profiles.map((p) => (
+          profiles.map((p : any) => (
             <ProfileCard key={p.id} {...p} />
           ))
         ) : (
