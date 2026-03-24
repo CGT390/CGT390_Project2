@@ -22,3 +22,10 @@
   font-weight: 500;
   color: #0070f3;
 }
+
+.profile-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+}

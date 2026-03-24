@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "src/app/page.js"  ],
+, "src/app/page.js", "src/app/api/students/[id]/route.js"  ],
   "exclude": [
     "node_modules"
   ]

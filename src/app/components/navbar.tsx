@@ -1,3 +1,4 @@
+'use client'
 import "./navbar.css";
 
 const Navbar = () => {
@@ -7,6 +8,7 @@ const Navbar = () => {
             <ul className="navbar-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="/about">About</a></li>
+                <li><a href="/api-page">API Playground</a></li>
             </ul>
         </nav>
     );

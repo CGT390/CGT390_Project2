@@ -9,8 +9,7 @@ async function fetchTitles(): Promise<string[]> {
     { cache: 'no-store' }
   );
   const data = await response.json();
-  console.log("Fetched titles:", data?.data);
-
+  console.log("Full titles response:", data);
   return data?.titles || [];
 }
 
@@ -50,7 +49,7 @@ export default async function Home({ searchParams }: PageProps) {
       />
       <div key={`${selectedTitle}-${selectedSearch}`} className="profile-list">
         {profiles.length > 0 ? (
-          profiles.map((p : any) => (
+          profiles.map((p: any) => (
             <ProfileCard key={p.id} {...p} />
           ))
         ) : (
