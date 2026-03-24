@@ -36,3 +36,18 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 
+Repo Link: https://github.com/CGT390/CGT390_Project2
+
+
+Base URL: https://cgt-390-project2.vercel.app/
+
+
+GET /api/students → all students
+GET /api/students?name=ava → filter by name, ex ava
+GET /api/students?major=CS → filter by major, ex CS
+GET /api/students?year=2 → filter by year, ex 2
+GET /api/students/1 → single student by id, ex 1, so the first student
+GET /api/students?name=ava&amp;major=CS&amp;year=2 → multiple parameters
+POST /api/students → body: { name, major, year, gpa } → 201, ex { ava, CS, 2, 3.6 }
+PATCH /api/students/1 → body: { gpa: 3.9 } → 200
+DELETE /api/students?id=1 → 200 or 404
