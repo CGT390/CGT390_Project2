@@ -1,94 +1,77 @@
 import { NextRequest } from "next/server";
-import { PrismaClient } from "../../generated/prisma"; 
-const prisma = new PrismaClient()
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+import { PrismaClient } from "../../generated/prisma";
 
-type Profile = {
-  id?: number;
-  name: string;
-  major: string;
-  year: number;
-  gpa: number;
-};
+const prisma = new PrismaClient();
 
-let profiles: Profile[] = [
-  { id: 1, name: "Ava Lee", major: "CS", year: 2, gpa: 3.6 },
-  { id: 2, name: "Ben Park", major: "CGT", year: 3, gpa: 3.2 },
-];
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
+// GET – filter profiles from DB
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const year = searchParams.get("year") || "";
-  const name = searchParams.get("name") || "";
-  const major = searchParams.get("major") || "";
-  let filteredProfiles = [...profiles];
+  const year = searchParams.get("year");
+  const name = searchParams.get("name");
+  const major = searchParams.get("major");
 
-  if (year) {
-    filteredProfiles = filteredProfiles.filter(
-      (p) => p.year === Number(year)
-    );
-  }
-  if (name) {
-    filteredProfiles = filteredProfiles.filter((p) =>
-      p.name.toLowerCase().includes(name.toLowerCase())
-    );
-  }
-  if (major) {
-    filteredProfiles = filteredProfiles.filter(
-      (p) => p.major.toLowerCase() === major.toLowerCase()
-    );
-  }
-  return Response.json(filteredProfiles, { status: 200 });
+  const profiles = await prisma.user.findMany({
+    where: {
+      ...(year && { year: Number(year) }),
+      ...(name && { name: { contains: name, mode: "insensitive" } }),
+      ...(major && { major: { equals: major, mode: "insensitive" } }),
+    },
+  });
+
+  return Response.json(profiles, { status: 200 });
 }
 
+// POST – create a new profile
 export async function POST(request: NextRequest) {
-  const newProfile: Partial<Profile> = await request.json();
+  const body = await request.json();
+
+  if (!body.name || typeof body.name !== "string") {
+    return Response.json({ error: "Invalid name" }, { status: 400 });
+  }
+  if (!body.major || typeof body.major !== "string") {
+    return Response.json({ error: "Invalid major" }, { status: 400 });
+  }
+  if (!body.year || body.year < 1 || body.year > 4) {
+    return Response.json({ error: "Invalid year" }, { status: 400 });
+  }
+  if (body.gpa === undefined || body.gpa < 0 || body.gpa > 4) {
+    return Response.json({ error: "Invalid GPA" }, { status: 400 });
+  }
 
   try {
-    if (!newProfile.name || typeof newProfile.name !== "string") {
-      return Response.json({ error: "Invalid name" }, { status: 400 });
-    }
-    if (!newProfile.major || typeof newProfile.major !== "string") {
-      return Response.json({ error: "Invalid major" }, { status: 400 });
-    }
-    if (!newProfile.year || newProfile.year < 1 || newProfile.year > 4) {
-      return Response.json({ error: "Invalid year" }, { status: 400 });
-    }
-    if (newProfile.gpa === undefined || newProfile.gpa < 0 || newProfile.gpa > 4) {
-      return Response.json({ error: "Invalid GPA" }, { status: 400 });
-    }
-
-    // Use a separate type for Prisma create (omit `id`)
-    const prismaData = {
-      name: newProfile.name.trim(),
-      major: newProfile.major,
-      year: Number(newProfile.year),
-      gpa: Number(newProfile.gpa),
-    };
-
-    const createdUser = await prisma.user.create({
-      data: prismaData,
+    const created = await prisma.user.create({
+      data: {
+        name: body.name.trim(),
+        major: body.major,
+        year: Number(body.year),
+        gpa: Number(body.gpa),
+      },
     });
-
-    return Response.json(createdUser, { status: 201 });
+    return Response.json(created, { status: 201 });
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Bad request" }, { status: 400 });
   }
 }
 
+// DELETE – remove a profile by id
 export async function DELETE(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const id = searchParams.get("id");
+  const id = request.nextUrl.searchParams.get("id");
 
   if (!id) {
     return Response.json({ error: "Missing id" }, { status: 400 });
   }
-  const index = profiles.findIndex((p) => p.id === Number(id));
-  if (index === -1) {
+
+  try {
+    const deleted = await prisma.user.delete({
+      where: { id: id },
+    });
+    return Response.json({ message: "Profile deleted", deleted }, { status: 200 });
+  } catch (error) {
+    // Prisma throws P2025 when the record doesn't exist
     return Response.json({ error: "Profile not found" }, { status: 404 });
   }
-  profiles.splice(index, 1);
-  return Response.json({ message: "Profile deleted" }, { status: 200 });
 }
