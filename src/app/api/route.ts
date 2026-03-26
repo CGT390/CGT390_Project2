@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
+import { PrismaClient } from "../../generated/prisma"; 
+const prisma = new PrismaClient()
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 type Profile = {
-  id: number;
+  id?: number;
   name: string;
   major: string;
   year: number;
@@ -40,6 +44,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const newProfile: Partial<Profile> = await request.json();
+
   try {
     if (!newProfile.name || typeof newProfile.name !== "string") {
       return Response.json({ error: "Invalid name" }, { status: 400 });
@@ -53,16 +58,22 @@ export async function POST(request: NextRequest) {
     if (newProfile.gpa === undefined || newProfile.gpa < 0 || newProfile.gpa > 4) {
       return Response.json({ error: "Invalid GPA" }, { status: 400 });
     }
-    const createdProfile: Profile = {
-      id: Date.now(),
+
+    // Use a separate type for Prisma create (omit `id`)
+    const prismaData = {
       name: newProfile.name.trim(),
       major: newProfile.major,
       year: Number(newProfile.year),
       gpa: Number(newProfile.gpa),
     };
-    profiles.push(createdProfile);
-    return Response.json(createdProfile, { status: 201 });
-  } catch {
+
+    const createdUser = await prisma.user.create({
+      data: prismaData,
+    });
+
+    return Response.json(createdUser, { status: 201 });
+  } catch (error) {
+    console.error(error);
     return Response.json({ error: "Bad request" }, { status: 400 });
   }
 }
