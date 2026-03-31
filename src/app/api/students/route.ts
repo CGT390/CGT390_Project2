@@ -1,6 +1,14 @@
 import { NextRequest } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { put } from '@vercel/blob';
+
+// const blob = await put(imgFile.name, imgFile, {
+// access: 'public',
+// allowOverwrite: true,
+// });
+// const imageUrl = blob.url;
+import prisma from '@/app/lib/prisma'
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,7 +34,6 @@ async function seedProfiles(prisma: PrismaClient) {
 }
 
 export async function GET(request: NextRequest) {
-  const prisma = getClient();
   try {
     await seedProfiles(prisma);
 
@@ -50,7 +57,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const prisma = getClient();
   try {
     const newProfile = await request.json();
 
@@ -82,7 +88,6 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const prisma = getClient();
   try {
     const id = request.nextUrl.searchParams.get("id");
     if (!id) return Response.json({ error: "Missing id" }, { status: 400 });

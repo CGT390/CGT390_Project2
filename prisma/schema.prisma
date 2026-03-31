@@ -18,3 +18,14 @@ model User {
   year     Int
   gpa      Float
 }
+
+model Profile{
+  id Int @id @default(autoincrement())
+  name String
+  title String
+  email String @unique
+  bio String
+  image_url String
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}

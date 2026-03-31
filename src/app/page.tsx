@@ -2,26 +2,48 @@ import Navbar from './components/navbar';
 import ProfileCard from './components/profile-card';
 import Filters from './components/filters';
 import './css/homepage.css';
+import prisma from '@/app/lib/prisma'
 
-async function fetchTitles(): Promise<string[]> {
-  const response = await fetch(
-    "https://web.ics.purdue.edu/~zong6/profile-app/get-titles.php",
-    { cache: 'no-store' }
-  );
-  const data = await response.json();
-  console.log("Full titles response:", data);
-  return data?.titles || [];
+export const runtime = "nodejs";
+
+
+async function fetchTitles() {
+  const data = await prisma.profile.findMany({
+    distinct: ["title"],
+    select: { title: true },
+  });
+  return data ? data.map((t) => t.title) : [];
+}
+async function getData({ title, search }: { title?: string; search?: string }) {
+  const profiles = await prisma.profile.findMany({
+    where: {
+      ...(title && { title: { contains: title, mode: "insensitive" } }),
+      ...(search && { name: { contains: search, mode: "insensitive" } }),
+    },
+  });
+  return profiles;
 }
 
-async function fetchProfiles(title: string, search: string) {
-  const response = await fetch(
-    `https://web.ics.purdue.edu/~zong6/profile-app/fetch-data-with-filter.php?title=${title}&name=${search}&limit=1000`,
-    { cache: 'no-store' }
-  );
-  const data = await response.json();
-  console.log("Fetched profiles:", data?.profiles);
-  return data?.profiles || [];
-}
+
+// async function fetchTitles(): Promise<string[]> {
+//   const response = await fetch(
+//     "https://web.ics.purdue.edu/~zong6/profile-app/get-titles.php",
+//     { cache: 'no-store' }
+//   );
+//   const data = await response.json();
+//   console.log("Full titles response:", data);
+//   return data?.titles || [];
+// }
+
+// async function fetchProfiles(title: string, search: string) {
+//   const response = await fetch(
+//     `https://web.ics.purdue.edu/~zong6/profile-app/fetch-data-with-filter.php?title=${title}&name=${search}&limit=1000`,
+//     { cache: 'no-store' }
+//   );
+//   const data = await response.json();
+//   console.log("Fetched profiles:", data?.profiles);
+//   return data?.profiles || [];
+// }
 type PageProps = {
   searchParams?: Promise<{
     title?: string;
@@ -36,7 +58,7 @@ export default async function Home({ searchParams }: PageProps) {
 
   const [titles, profiles] = await Promise.all([
     fetchTitles(),
-    fetchProfiles(selectedTitle, selectedSearch),
+    getData({ title: selectedTitle, search: selectedSearch }),
   ]);
 
   return (
