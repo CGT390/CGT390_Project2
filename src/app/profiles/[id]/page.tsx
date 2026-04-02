@@ -1,55 +1,56 @@
-import Link from 'next/link';
+import Link from "next/link";
+import prisma from "@/app/lib/prisma";
+import "./profile-detail.css";
 
-// Fetch a single profile by id from the same API
-async function fetchProfile(id: string) {
-    const response = await fetch(
-        `https://web.ics.purdue.edu/~zong6/profile-app/fetch-data-with-filter.php?limit=1000`,
-        { cache: 'no-store' }
-    );
-    const data = await response.json();
-    const profiles = data?.profiles || [];
-    console.log('profiles fetched:', profiles.length, 'looking for id:', id);
-
-    return profiles.find((p: any) => String(p.id) === id) ?? null;
+interface PageProps {
+    params: Promise<{ id: string }>;
 }
 
-type PageProps = {
-    params: Promise<{ id: string }>;
-};
-
-export default async function ProfilePage({ params }: PageProps) {
+export default async function ProfileDetailPage({ params }: PageProps) {
     const { id } = await params;
-    const profile = await fetchProfile(id);
-
-
+    const profile = await prisma.profile.findUnique({
+        where: { id: parseInt(id) },
+    });
 
     if (!profile) {
         return (
-            <main style={{ padding: '2rem' }}>
-                <p>Profile not found.</p>
-                <Link href="/">← Back to profiles</Link>
+            <main>
+                <div className="section">
+                    <div className="container">
+                        <p className="not-found">Profile not found.</p>
+                    </div>
+                </div>
             </main>
         );
     }
 
     return (
-        <main style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-            <Link href="/" style={{ display: 'inline-block', marginBottom: '1.5rem' }}>
-                ← Back to profiles
-            </Link>
-
-            <img
-                src={profile.image_url}
-                alt={profile.name}
-                style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover' }}
-            />
-
-            <h1>{profile.name}</h1>
-            <h2 style={{ fontWeight: 'normal', color: '#666' }}>{profile.title}</h2>
-
-            <p>{profile.bio}</p>
-            <p>📧 {profile.email}</p>
-            <p>📞 {profile.phone}</p>
+        <main>
+            <div className="section">
+                <div className="container">
+                    <div className="profile-card">
+                        <figure className="profile-image">
+                            <img src={profile.image_url} alt={profile.name} />
+                        </figure>
+                        <div className="profile-info">
+                            <h1>{profile.name}</h1>
+                            <p className="profile-title">{profile.title}</p>
+                            <p className="profile-email">
+                                <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                            </p>
+                            <p className="profile-bio">{profile.bio}</p>
+                            <div className="profile-actions">
+                                <Link href={`/profiles/${profile.id}/edit`} className="btn-edit">
+                                    Edit Profile
+                                </Link>
+                                <Link href="/" className="btn-back">
+                                    Back to Profiles
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     );
 }

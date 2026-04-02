@@ -30,7 +30,9 @@ export async function POST(request: Request) {
     const title = formData.get('title') as string | null
     const email = formData.get('email') as string | null
     const bio = formData.get('bio') as string | null
-    const imgFile = formData.get('image') as File | null
+    const imgFile = formData.get('img') as File | null
+
+    // ...other validations...
 
     console.log('Parsed Form Data:', { name, title, email, bio, imgFile })
 
@@ -43,6 +45,10 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Email is required' }, { status: 400 })
     } else if (!bio || bio.trim() === '') {
       return Response.json({ error: 'Bio is required' }, { status: 400 })
+    } else if (!imgFile || !(imgFile instanceof File) || imgFile.size === 0) {
+      return Response.json({ error: 'Image is required' }, { status: 400 })
+    } else if (imgFile.size > 1024 * 1024) {
+      return Response.json({ error: 'Image must be less than 1MB' }, { status: 400 })
     } else if (!imgFile || imgFile.size > 1024 * 1024) {
       return Response.json(
         { error: 'Image is required and must be less than 1MB' },
