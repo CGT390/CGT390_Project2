@@ -11,7 +11,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
+model Student {
   id       String @id @default(uuid())
   name     String
   major    String
@@ -28,4 +28,12 @@ model Profile{
   image_url String
   createAt DateTime @default(now())
   updateAt DateTime @updatedAt
+}
+
+model User{
+  id String @id @default(cuid())
+  email String @unique
+  password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

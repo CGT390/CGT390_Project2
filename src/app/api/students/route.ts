@@ -24,9 +24,9 @@ const initialProfiles = [
 ];
 
 async function seedProfiles(prisma: PrismaClient) {
-  const count = await prisma.user.count();
+  const count = await prisma.student.count();
   if (count === 0) {
-    await prisma.user.createMany({
+    await prisma.student.createMany({
       data: initialProfiles,
       skipDuplicates: true,
     });
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     const name = searchParams.get("name");
     const major = searchParams.get("major");
 
-    const profiles = await prisma.user.findMany({
+    const profiles = await prisma.student.findMany({
       where: {
         ...(year  && { year: Number(year) }),
         ...(name  && { name: { contains: name, mode: "insensitive" } }),
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: "Invalid GPA" }, { status: 400 });
     }
 
-    const created = await prisma.user.create({
+    const created = await prisma.student.create({
       data: {
         name:  newProfile.name.trim(),
         major: newProfile.major,
@@ -92,7 +92,7 @@ export async function DELETE(request: NextRequest) {
     const id = request.nextUrl.searchParams.get("id");
     if (!id) return Response.json({ error: "Missing id" }, { status: 400 });
 
-    const deleted = await prisma.user.delete({ where: { id } });
+    const deleted = await prisma.student.delete({ where: { id } });
     return Response.json({ message: "Profile deleted", deleted }, { status: 200 });
   } catch (error) {
     return Response.json({ error: "Profile not found" }, { status: 404 });
