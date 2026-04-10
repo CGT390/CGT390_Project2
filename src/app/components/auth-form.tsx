@@ -145,8 +145,8 @@ export default function AuthForm() {
                 ? "Signing in..."
                 : "Registering..."
               : isLogin
-              ? "Sign In"
-              : "Register"}
+                ? "Sign In"
+                : "Register"}
           </button>
         </form>
 
@@ -159,8 +159,14 @@ export default function AuthForm() {
           <button type="button" onClick={handleToggle}>
             {isLogin ? "Register" : "Sign In"}
           </button>
+          <button onClick={() => signIn("github", { callbackUrl })}>
+            Sign in with GitHub
+          </button>
+          <button onClick={() => signIn("google", { callbackUrl })}>
+              Sign in with Google
+            </button>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import bcrypt from "bcryptjs";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "@/app/lib/prisma";
+import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 
 export const {
   auth,
@@ -17,7 +19,7 @@ export const {
       async authorize(credentials) {
         try {
           const email = credentials?.email as string;
-          const password = credentials?.password as string ;
+          const password = credentials?.password as string;
 
           if (!email || !password) {
             return null;
@@ -49,6 +51,10 @@ export const {
         }
       },
     }),
+    GitHub({
+      issuer: "https://github.com/login/oauth",
+    }),
+    Google,
   ],
   pages: {
     signIn: "/auth/signin",
